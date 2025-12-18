@@ -1,0 +1,74 @@
+import { db } from "@/db/drizzle";
+import { posts } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { notFound } from "next/navigation";
+import Image from "next/image";
+import { formatDate } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+
+export default async function BeritaDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+
+  // 1. Ambil data berita berdasarkan slug + Relasi Kategori
+  const post = await db.query.posts.findFirst({
+    where: eq(posts.slug, slug),
+    with: {
+      category: true,
+    },
+  });
+
+  if (!post) return notFound();
+
+  return (
+    <article className="min-h-screen bg-white pb-20">
+       {/* Header/Navigation Back */}
+       <div className="container mx-auto px-4 py-6">
+            <a href="/" className="text-blue-600 hover:underline flex items-center gap-1 text-sm font-medium">
+                &larr; Kembali ke Beranda
+            </a>
+       </div>
+
+      <div className="container mx-auto px-4 max-w-4xl">
+        {/* Kategori & Tanggal */}
+        <div className="flex items-center justify-center gap-3 mb-4">
+            {post.category && <Badge>{post.category.name}</Badge>}
+            <span className="text-gray-500 text-sm">{formatDate(post.createdAt)}</span>
+        </div>
+
+        {/* Judul Besar */}
+        <h1 className="text-3xl md:text-5xl font-black text-center leading-tight mb-8 text-gray-900">
+            {post.title}
+        </h1>
+
+        {/* Gambar Utama */}
+        {post.imageUrl && (
+            <div className="relative aspect-video w-full rounded-2xl overflow-hidden mb-10 shadow-lg">
+                <Image 
+                    src={post.imageUrl} 
+                    alt={post.title} 
+                    fill 
+                    className="object-cover"
+                    priority
+                />
+            </div>
+        )}
+
+        {/* Isi Berita */}
+        <div className="prose prose-lg prose-blue mx-auto text-gray-800 leading-relaxed">
+            {/* Hati-hati: Jika konten mengandung HTML (dari Rich Text Editor), 
+                gunakan library seperti 'html-react-parser' atau dangerouslySetInnerHTML.
+                Untuk teks biasa, tampilkan langsung seperti ini:
+            */}
+            <div className="whitespace-pre-wrap">
+                {post.content}
+            </div>
+        </div>
+
+        {/* Footer Author */}
+        <div className="mt-12 border-t pt-6 text-center text-gray-500">
+            Ditulis oleh <span className="font-bold text-gray-800">{post.author || "Redaksi CieTV"}</span>
+        </div>
+      </div>
+    </article>
+  );
+}
