@@ -1,54 +1,54 @@
 import Link from "next/link";
-import Image from "next/image"; // <--- Jangan lupa import ini
+import Image from "next/image";
 import { Button } from "./ui/button";
-import { Search, Menu, Bell } from "lucide-react";
+import { Search, Bell } from "lucide-react";
+import { db } from "@/db/drizzle";
+import { categories } from "@/db/schema";
+import { MobileNav } from "./mobile-nav";
+import { NavLinks } from "./nav-links"; // <--- Import component baru
 
-export function Navbar() {
+export async function Navbar() {
+  const categoryList = await db.select().from(categories);
+
   return (
     <header className="border-b bg-white sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        
-        {/* LOGO AREA */}
+        {/* LOGO & MOBILE MENU */}
         <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-            </Button>
-            
-            <Link href="/" className="flex items-center">
-                {/* Menggunakan Logo dari public/cietv.jpeg */}
-                <Image 
-                    src="/cietv.jpeg" 
-                    alt="CIETV Logo" 
-                    width={120}  // Lebar dasar (resolusi render)
-                    height={50}  // Tinggi dasar
-                    className="h-10 w-auto object-contain" // CSS: Tinggi fix 40px, lebar menyesuaikan
-                    priority // Agar logo di-load paling duluan
-                />
-            </Link>
+          <MobileNav categories={categoryList} />
+
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/cietv.jpeg"
+              alt="CIETV Logo"
+              width={120}
+              height={50}
+              className="h-10 w-auto object-contain"
+              priority
+            />
+          </Link>
         </div>
 
-        {/* Navigation (Desktop) */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            <Link href="/" className="text-black hover:text-red-600 transition font-bold">Home</Link>
-            <Link href="/news" className="hover:text-red-600 transition">News</Link>
-            <Link href="/sports" className="hover:text-red-600 transition">Sports</Link>
-            <Link href="/tech" className="hover:text-red-600 transition">Technology</Link>
-            <Link href="/opinion" className="hover:text-red-600 transition">Opinion</Link>
-        </nav>
+        {/* NAVIGATION (DESKTOP) - PANGGIL DISINI */}
+        <NavLinks categories={categoryList} />
 
-        {/* Actions */}
+        {/* ACTIONS */}
         <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon">
-                <Search className="h-5 w-5 text-gray-500" />
+          <Button variant="ghost" size="icon">
+            <Search className="h-5 w-5 text-gray-500" />
+          </Button>
+          <Button variant="ghost" size="icon" className="hidden sm:flex">
+            <Bell className="h-5 w-5 text-gray-500" />
+          </Button>
+          <Link href="/admin/posts">
+            <Button
+              variant="default"
+              size="sm"
+              className="rounded-full px-6 bg-red-600 hover:bg-red-700"
+            >
+              Login
             </Button>
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
-                <Bell className="h-5 w-5 text-gray-500" />
-            </Button>
-            <Link href="/admin/posts">
-                <Button variant="default" size="sm" className="rounded-full px-6 bg-red-600 hover:bg-red-700">
-                    Login
-                </Button>
-            </Link>
+          </Link>
         </div>
       </div>
     </header>

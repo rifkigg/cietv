@@ -31,6 +31,7 @@
     "next-auth": "^5.0.0-beta.30",
     "react": "19.2.1",
     "react-dom": "19.2.1",
+    "react-quill-new": "^3.7.0",
     "styled-components": "^6.1.19",
     "tailwind-merge": "^3.4.0"
   },
