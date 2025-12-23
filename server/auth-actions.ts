@@ -2,12 +2,16 @@
 
 import { signIn } from "@/server/auth";
 import { AuthError } from "next-auth";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 // Definisi tipe state return (opsional tapi bagus untuk TS)
-type LoginState = {
-  error?: string;
-} | undefined | null;
+type LoginState =
+  | {
+      error?: string;
+    }
+  | undefined
+  | null;
 
 export async function loginAction(prevState: LoginState, formData: FormData) {
   try {
@@ -30,9 +34,13 @@ export async function loginAction(prevState: LoginState, formData: FormData) {
 }
 
 export async function logoutAction() {
-  // Di sini nanti logika logout sesungguhnya (misal: await signOut())
-  console.log("Proses Logout di Server...");
-  
-  // Setelah logout, redirect ke halaman login atau home
+  const cookieStore = await cookies();
+
+  // 1. Hapus cookie utama sesi Auth.js
+  cookieStore.delete("authjs.session-token");
+
+  // (Opsional) Hapus cookie pendukung lainnya agar bersih total
+  cookieStore.delete("authjs.csrf-token");
+  cookieStore.delete("authjs.callback-url");
   redirect("/");
 }
