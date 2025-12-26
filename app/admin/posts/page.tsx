@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AdminPostToolbar } from "@/components/admin-post-toolbar";
 import { SortableHeader } from "@/components/sortable-header";
+import { DeletePostButton } from "@/components/delete-post-button";
+import { PostToastListener } from "@/components/post-toast-listener";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -107,6 +109,7 @@ export default async function AdminPostsPage(props: AdminPostsPageProps) {
 
   return (
     <div className="p-4 md:p-6 space-y-6 bg-gray-50 min-h-screen">
+      <PostToastListener />
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -206,13 +209,9 @@ export default async function AdminPostsPage(props: AdminPostsPageProps) {
                             <Pencil className="w-4 h-4" />
                           </Button>
                         </Link>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-red-600"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+
+                        {/* 2. GANTI TOMBOL SAMPAH LAMA DENGAN INI */}
+                        <DeletePostButton id={post.id} title={post.title} />
                       </div>
                     </td>
                   </tr>
@@ -273,8 +272,11 @@ export default async function AdminPostsPage(props: AdminPostsPageProps) {
                         <Pencil className="w-4 h-4 text-blue-600" />
                       </Button>
                     </Link>
+                    <Link href={`/admin/posts/${post.id}/delete`}>
+                      <DeletePostButton id={post.id} title={post.title} />
+                    </Link>
 
-                    {/* Contoh Dropdown Menu untuk Mobile agar hemat tempat jika banyak tombol */}
+                    {/* Contoh Dropdown Menu untuk Mobile agar hemat tempat jika banyak tombol
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -290,7 +292,7 @@ export default async function AdminPostsPage(props: AdminPostsPageProps) {
                           <Trash2 className="w-4 h-4 mr-2" /> Hapus Berita
                         </DropdownMenuItem>
                       </DropdownMenuContent>
-                    </DropdownMenu>
+                    </DropdownMenu> */}
                   </div>
                 </div>
               </div>

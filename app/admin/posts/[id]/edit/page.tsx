@@ -1,36 +1,45 @@
+import { updatePostAction } from "@/server/post-actions";
+import PostForm from "@/components/admin/post-form"; // Pastikan path benar
 import { db } from "@/db/drizzle";
 import { posts, categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import PostForm from "@/components/admin/post-form";
-import { updatePostAction } from "@/server/post-actions";
 
-export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const postId = parseInt(id);
+// 1. Update Interface: params harus Promise
+interface EditPostPageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
 
-  if (isNaN(postId)) return notFound();
+export default async function EditPostPage({ params }: EditPostPageProps) {
+  // 2. Await params terlebih dahulu!
+  const resolvedParams = await params;
+  const id = parseInt(resolvedParams.id);
 
-  // 1. Ambil Data Postingan
-  const postResult = await db.select().from(posts).where(eq(posts.id, postId)).limit(1);
-  const post = postResult[0];
+  if (isNaN(id)) return notFound();
+
+  // Ambil Data Postingan
+  const post = await db.query.posts.findFirst({
+    where: eq(posts.id, id),
+  });
+
+  // Ambil Kategori
+  const categoryList = await db.select().from(categories);
 
   if (!post) return notFound();
 
-  // 2. Ambil Semua Kategori (untuk dropdown)
-  const categoriesData = await db.select().from(categories);
-
-  // 3. Bind ID ke action update
+  // Bind ID ke Action
   const updateActionWithId = updatePostAction.bind(null, post.id);
 
   return (
-    <div className="max-w-3xl mx-auto py-10">
+    <div className="p-6 bg-gray-50 min-h-screen">
       <h1 className="text-2xl font-bold mb-6">Edit Berita</h1>
       
-      <PostForm 
+      <PostForm
         actionHandler={updateActionWithId}
-        initialData={post}      // Data berita lama
-        categories={categoriesData} // Data kategori
+        categories={categoryList}
+        initialData={post}
         buttonLabel="Update Berita"
       />
     </div>

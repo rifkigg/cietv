@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -11,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import RichTextEditor from "../rich-text-editor";
@@ -33,19 +32,12 @@ export default function PostForm({
   const [state, action, isPending] = useActionState(actionHandler, null);
   const [content, setContent] = useState(initialData?.content || "");
 
-  // State untuk preview gambar saat user memilih file
+  // State untuk preview gambar
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     initialData?.imageUrl || null
   );
 
-  useEffect(() => {
-    if (state?.success) {
-      router.push("/admin/posts");
-      router.refresh();
-    }
-  }, [state, router]);
-
-  // Fungsi handle perubahan input file untuk preview
+  // Handler file tetap sama sesuai kodemu
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -57,100 +49,137 @@ export default function PostForm({
   return (
     <form
       action={action}
-      className="space-y-6 border p-6 rounded-lg shadow-sm bg-white"
+      className="max-w-4xl mx-auto bg-white border rounded-xl shadow-sm overflow-hidden"
     >
-      {/* JUDUL */}
-      <div className="grid gap-2">
-        <Label htmlFor="title">Judul Berita</Label>
-        <Input
-          id="title"
-          name="title"
-          required
-          defaultValue={initialData?.title || ""}
-          placeholder="Judul berita..."
-        />
-      </div>
+      <div className="p-6 md:p-8 space-y-8">
+        {/* --- JUDUL BERITA --- */}
+        <div className="space-y-2">
+          <Label htmlFor="title" className="text-base font-semibold">
+            Judul Berita
+          </Label>
+          <Input
+            id="title"
+            name="title"
+            required
+            defaultValue={initialData?.title || ""}
+            placeholder="Masukkan judul berita utama..."
+            className="text-lg py-5"
+          />
+        </div>
 
-      {/* KATEGORI */}
-      <div className="grid gap-2">
-        <Label>Kategori</Label>
-        <Select
-          name="categoryId"
-          defaultValue={initialData?.categoryId?.toString()}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Pilih Kategori" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id.toString()}>
-                {cat.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+        {/* --- GRID: KATEGORI & AUTHOR (2 Kolom) --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Kategori */}
+          <div className="space-y-2">
+            <Label>Kategori</Label>
+            <Select
+              name="categoryId"
+              defaultValue={initialData?.categoryId?.toString()}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih Kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id.toString()}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      {/* AUTHOR */}
-      <div className="grid gap-2">
-        <Label htmlFor="author">Penulis</Label>
-        <Input
-          id="author"
-          name="author"
-          defaultValue={initialData?.author || "Admin"}
-        />
-      </div>
-
-      {/* --- IMAGE UPLOAD (PERUBAHAN DI SINI) --- */}
-      <div className="grid gap-2">
-        <Label htmlFor="image">Gambar Thumbnail</Label>
-
-        {/* Input File */}
-        <Input
-          id="image"
-          name="image"
-          type="file"
-          accept="image/*" // Hanya terima gambar
-          onChange={handleFileChange}
-          className="cursor-pointer"
-        />
-        <p className="text-xs text-gray-500">
-          Maksimal ukuran file disarankan di bawah 2MB.
-        </p>
-
-        {/* Preview Gambar */}
-        {previewUrl && (
-          <div className="mt-2 relative w-full h-48 border rounded-md overflow-hidden bg-gray-100">
-            <Image
-              src={previewUrl}
-              alt="Preview"
-              fill
-              className="object-cover"
+          {/* Author */}
+          <div className="space-y-2">
+            <Label htmlFor="author">Penulis</Label>
+            <Input
+              id="author"
+              name="author"
+              defaultValue={initialData?.author || "Admin"}
+              placeholder="Nama penulis..."
             />
+          </div>
+        </div>
+
+        {/* --- IMAGE UPLOAD (LOGIKA TETAP SAMA) --- */}
+        <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+          <Label htmlFor="image" className="font-semibold">
+            Gambar Thumbnail
+          </Label>
+
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Input Wrapper */}
+            <div className="w-full md:w-1/2 space-y-2">
+              <Input
+                id="image"
+                name="image"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="cursor-pointer bg-white"
+              />
+              <p className="text-xs text-muted-foreground">
+                Format: JPG, PNG, WEBP. Maksimal ukuran 2MB.
+              </p>
+            </div>
+
+            {/* Preview Wrapper */}
+            {previewUrl ? (
+              <div className="relative w-full md:w-1/2 h-48 rounded-md overflow-hidden border shadow-sm">
+                <Image
+                  src={previewUrl}
+                  alt="Preview Thumbnail"
+                  fill
+                  className="object-cover transition-transform hover:scale-105 duration-300"
+                />
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center justify-center w-1/2 h-20 bg-gray-100 rounded text-gray-400 text-sm border">
+                Belum ada gambar
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* --- RICH TEXT EDITOR (LOGIKA TETAP SAMA) --- */}
+        <div className="space-y-3">
+          <Label className="font-semibold">Konten Berita</Label>
+          <div className="border rounded-md min-h-[300px]">
+            {/* Component Editor Visual */}
+            <RichTextEditor value={content} onChange={setContent} />
+          </div>
+
+          {/* Input Hidden Wajib untuk Server Action */}
+          <input type="hidden" name="content" value={content} />
+        </div>
+
+        {/* Error Message */}
+        {state?.error && (
+          <div className="p-3 bg-red-50 text-red-600 text-sm rounded-md border border-red-200">
+            ⚠️ {state.error}
           </div>
         )}
       </div>
 
-      {/* GANTI TEXTAREA DENGAN INI */}
-      <div className="space-y-2">
-        <Label>Konten Berita</Label>
-
-        {/* 1. Component Editor Visual */}
-        <RichTextEditor value={content} onChange={setContent} />
-
-        {/* 2. Input Tersembunyi untuk dikirim ke Server Action */}
-        {/* Name "content" ini yang akan dibaca oleh formData.get('content') */}
-        <input type="hidden" name="content" value={content} />
-      </div>
-
-      {state?.error && <p className="text-sm text-red-500">{state.error}</p>}
-
-      <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" onClick={() => router.back()}>
+      {/* --- BUTTONS ACTION (Sticky Bottom style) --- */}
+      <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.back()}
+          className="min-w-[100px]"
+        >
           Batal
         </Button>
-        <Button type="submit" disabled={isPending}>
-          {isPending ? "Mengupload..." : buttonLabel}
+        <Button type="submit" disabled={isPending} className="min-w-[120px]">
+          {isPending ? (
+            <span className="flex items-center gap-2">
+              <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+              Menyimpan...
+            </span>
+          ) : (
+            buttonLabel
+          )}
         </Button>
       </div>
     </form>
