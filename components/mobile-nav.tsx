@@ -1,64 +1,86 @@
 "use client";
 
-import { useState } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // Tambah ini
-import { Button } from "./ui/button";
-import { Menu, X } from "lucide-react";
-import { cn } from "@/lib/utils"; // Tambah ini
+import Image from "next/image";
 
-export function MobileNav({ categories }: { categories: any[] }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const pathname = usePathname(); // Ambil URL aktif
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
 
+export function MobileNav({ categories }: { categories: Category[] }) {
   return (
-    <div className="md:hidden">
-      <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </Button>
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="hover:bg-gray-100">
+          <Menu className="h-6 w-6 text-gray-800" />
+          <span className="sr-only">Menu</span>
+        </Button>
+      </SheetTrigger>
 
-      {isOpen && (
-        <div className="absolute top-16 left-0 w-full bg-white border-b shadow-lg p-4 flex flex-col gap-4 z-50">
-          {/* Link Home */}
-          <Link
-            href="/"
-            onClick={() => setIsOpen(false)}
-            className={cn(
-              "block py-2",
-              pathname === "/" ? "font-bold text-red-600" : "font-medium"
-            )}
-          >
-            Beranda
-          </Link>
+      {/* Ganti background jadi putih */}
+      <SheetContent
+        side="right"
+        className="bg-white text-gray-900 border-l border-gray-200 w-[300px] overflow-y-auto"
+      >
+        {/* --- PENAMBAHAN WAJIB UNTUK MENGHILANGKAN ERROR --- */}
+        <SheetHeader className="border-b pb-4 mb-4">
+          <div className="flex items-center justify-center">
+            <Image
+              src="/logo_cietv.png"
+              alt="Logo"
+              width={100}
+              height={40}
+              className="object-contain"
+            />
+          </div>
+          {/* Title ini Wajib ada, tapi bisa kita sembunyikan atau styling sesuai kebutuhan */}
+          <SheetTitle className="text-center text-sm font-bold uppercase text-gray-600">
+            Menu Navigasi
+          </SheetTitle>
+          <SheetDescription className="sr-only">
+            Pilih kategori berita yang ingin Anda baca.
+          </SheetDescription>
+        </SheetHeader>
+        {/* -------------------------------------------------- */}
 
-          {/* Loop Kategori */}
-          {categories.map((cat) => {
-            const linkHref = `/category/${cat.slug}`;
-            const isActive = pathname === linkHref;
+        <div className="flex flex-col gap-4">
+          <div className="space-y-1">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">
+              Kategori Berita
+            </h3>
 
-            return (
+            <Link
+              href="/"
+              className="block px-2 py-2text-lg font-medium hover:bg-gray-50 hover:text-red-600 rounded-md transition"
+            >
+              Home / News
+            </Link>
+
+            {categories.map((cat) => (
               <Link
                 key={cat.id}
-                href={linkHref}
-                onClick={() => setIsOpen(false)}
-                className={cn(
-                  "block py-2 capitalize",
-                  isActive
-                    ? "font-bold text-red-600"
-                    : "text-gray-600 hover:text-red-600"
-                )}
+                href={`/category/${cat.slug}`}
+                className="block px-2 py-2 text-lg font-medium text-gray-700 hover:bg-gray-50 hover:text-red-600 rounded-md transition"
               >
                 {cat.name}
               </Link>
-            );
-          })}
+            ))}
+          </div>
 
-          <hr />
-          {/* <Link href="/admin/posts" className="text-red-600 font-medium pt-2">
-            Login Admin
-          </Link> */}
         </div>
-      )}
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }
